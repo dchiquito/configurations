@@ -1,0 +1,56 @@
+# zsh/oh-my-zsh
+export ZSH="/home/${USER}/.oh-my-zsh"
+ZSH_THEME="dchiquito"
+ZSH_CUSTOM=~/git/zsh-custom
+plugins=(git python docker tmux virtualenv virtualenvwrapper dotenv cdg gitinit autojump)
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+source $ZSH/oh-my-zsh.sh
+
+# virtualenvwrapper
+export WORKON_HOME=~/envs
+export VIRTUALENVWRAPPER_PYTHON=$(which python3)
+
+
+# vim
+export EDITOR=nvim
+
+
+# PATH augmentations
+export PATH=$PATH:~/bin
+export PATH=$PATH:$HOME/.poetry/bin
+export PATH=$PATH:/usr/racket/bin
+
+
+# aliases
+alias gitka='gitk --all'
+# docker compose v2 is now only usable as `docker compose`, no more `docker-compose`.
+# I'm old fashioned, hence alias
+alias docker-compose="docker compose"
+
+# just for fun
+alias please=sudo
+alias pls=sudo
+alias plz=sudo
+
+# not sure what this does, might be important though
+eval "$(direnv hook zsh)"
+
+# Ruby
+export GEM_HOME="/home/daniel/.ruby"
+export PATH="$PATH:$GEM_HOME/bin"
+# gem installl will not work unless the $GEM_HOME exists, so make sure it exists
+mkdir -p $GEM_HOME
+
+# Remap any keyboard keys
+xmodmap ~/.xmodmap-remap
+
+# Set smooth neovide scrolling
+export NEOVIDE_MULTIGRID=1
+
+# Set up nv as an alias for neovide
+alias nv=neovide

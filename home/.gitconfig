@@ -1,0 +1,6 @@
+[user]
+	email = daniel.chiquito@gmail.com
+	name = Daniel Chiquito
+[core]
+	excludesfile = /home/daniel/.gitignore
+	editor = vi

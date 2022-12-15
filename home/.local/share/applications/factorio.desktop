@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Factorio
+GenericName=Factorio, the game
+Comment=Factorio, the game
+Exec=/usr/games/factorio/bin/x64/factorio
+Icon=/usr/games/factorio/data/base/thumbnail.png
+
+# It doesn't work and I don't know why
+# Hidden=true
