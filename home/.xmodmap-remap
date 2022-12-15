@@ -1,0 +1,15 @@
+!
+! Swap Alt_L and Super_L
+!
+remove mod1 = Alt_L
+remove mod4 = Super_L
+add mod1 = Super_L
+add mod4 = Alt_L
+
+
+!
+! Set Caps Lock to Escape
+!
+clear Lock
+keycode 0x42 = Escape
+
