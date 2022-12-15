@@ -54,3 +54,6 @@ export NEOVIDE_MULTIGRID=1
 
 # Set up nv as an alias for neovide
 alias nv=neovide
+
+# Declare the configuration repo
+export CONFIGURATOR_REPO=/home/daniel/git/configurations
