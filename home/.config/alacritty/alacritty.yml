@@ -1,0 +1,45 @@
+font:
+  normal:
+    family: Cousine Nerd Font
+    style: Regular
+  bold:
+    family: Cousine Nerd Font
+    style: Bold
+  italic:
+    family: Cousine Nerd Font
+    style: Italic
+  bold_italic:
+    family: Cousine Nerd Font
+    style: Bold Italic
+  size: 9
+
+# Colors (Dracula/darkplus)
+colors:
+  # Default colors
+  primary:
+    background: '#1e1e1e'
+    foreground: '#d4d4d4'
+
+  # Normal colors
+  # Cribbed from darkplus
+  normal:
+    black:   '#000000'
+    red:     '#f44747'
+    green:   '#6a9955'
+    yellow:  '#dcdcaa'
+    blue:    '#569cd6'
+    magenta: '#d16d9e'
+    cyan:    '#4ec9b0'
+    white:   '#bfbfbf'
+
+  # Bright colors
+  # TODO these are Dracula values
+  bright:
+    black:   '#575b70'
+    red:     '#ff6e67'
+    green:   '#5af78e'
+    yellow:  '#f4f99d'
+    blue:    '#caa9fa'
+    magenta: '#ff92d0'
+    cyan:    '#9aedfe'
+    white:   '#e6e6e6'
