@@ -36,6 +36,9 @@ vim.g.mapleader = ' '
 vim.cmd(':cabbrev h vert h')
 vim.cmd(':cabbrev help vert help')
 
+-- format on save
+vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
+vim.cmd([[ autocmd BufWritePre * lua print('aaaaah') ]])
 
 ------------------------------------
 -- Neovide specific configuration --
@@ -47,9 +50,9 @@ if vim.fn.exists('g:neovide') then
 end
 
 
-------------------------
--- Keyboard shortcuts --
-------------------------
+--------------------------------
+-- Keyboard shortcuts/hotkeys --
+--------------------------------
 
 
 -- save shortcut
@@ -78,6 +81,11 @@ vim.keymap.set('n', '<C-w>', ':Bdelete<cr>', {desc = 'Close buffer'})
 -- Telescope
 vim.keymap.set('n', '<C-P>', '<cmd>Telescope find_files<cr>', {desc = 'Search files'})
 
+-- hop
+vim.keymap.set('', '<leader>n', '<cmd>HopWord<cr>', {desc = 'Hop to a word'})
+vim.keymap.set('', '<leader>m', '<cmd>HopLineStart<cr>', {desc = 'Hop to a line'})
+vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLine<cr>', {desc = 'Hop to a word on the current line'})
+
 -- comment/uncomment
 -- linewise commenting
 vim.keymap.set({'n', 'i', 'c'}, '<C-_>', function()
@@ -102,7 +110,7 @@ local sign = function(opts)
     text = opts.text,
     numhl = ''
   })
-end
+ end
 
 sign({name = 'DiagnosticSignError', text = ''})
 sign({name = 'DiagnosticSignWarn', text = ''})
@@ -280,6 +288,15 @@ packer = require('packer').startup(function(use)
   -- Git indicators
   use {'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]]}
 
+
+  -- Hop
+  use {
+    'phaazon/hop.nvim',
+    branch = 'v2', -- optional but strongly recommended
+    config = function()
+      require('hop').setup({ keys = 'etovxqpdygfblzhckisuran' })
+    end
+  }
 
   -- Nicer bottom status bar
   use {
