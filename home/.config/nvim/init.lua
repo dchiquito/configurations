@@ -146,6 +146,8 @@ vim.opt.shortmess = vim.opt.shortmess + { c = true}
 -- Packer Plugins --
 --------------------
 
+-- Important note:
+-- You must run :PackerSync to pick up any changes made to the configurations.
 
 -- Install packer for plugin management
 local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
@@ -172,15 +174,36 @@ packer = require('packer').startup(function(use)
 
 
   -- Show buffers as tabs along the top of the screen
-  use {'akinsho/bufferline.nvim', requires = 'nvim-tree/nvim-web-devicons'}
+  use {
+    'akinsho/bufferline.nvim',
+    requires = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      require('bufferline').setup({
+        options = {
+          offsets = { { filetype = "NvimTree", padding = 0, separator = true } },
+          separator_style = "slant"
+        },
+        highlights = {
+          buffer_selected = {
+            italic = false,
+          },
+        },
+      })
+    end
+  }
 
 
   -- A color scheme like VSCodes
-  use 'martinsione/darkplus.nvim'
+  use {'martinsione/darkplus.nvim', config = [[ vim.cmd('colorscheme darkplus') ]]}
 
 
   -- Comment/uncomment commands
-  use 'numToStr/Comment.nvim'
+  -- hotkeys are defined in the hotkeys section
+  use {'numToStr/Comment.nvim', config = function()
+    require('Comment').setup({
+      mappings = false
+    })
+  end}
   
 
   ---------------------
@@ -188,7 +211,59 @@ packer = require('packer').startup(function(use)
   ---------------------
 
   -- Completion framework:
-  use 'hrsh7th/nvim-cmp' 
+  use {'hrsh7th/nvim-cmp', config = function()
+    local cmp = require'cmp'
+    cmp.setup({
+      -- Enable LSP snippets
+      snippet = {
+        expand = function(args)
+            vim.fn["vsnip#anonymous"](args.body)
+        end,
+      },
+      mapping = {
+        ['<C-k>'] = cmp.mapping.select_prev_item(),
+        ['<C-j>'] = cmp.mapping.select_next_item(),
+        -- Add tab support
+        ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+        ['<Tab>'] = cmp.mapping.select_next_item(),
+        ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-f>'] = cmp.mapping.scroll_docs(4),
+        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.close(),
+        ['<CR>'] = cmp.mapping.confirm({
+          behavior = cmp.ConfirmBehavior.Insert,
+          select = true,
+        })
+      },
+      -- Installed sources:
+      sources = {
+        { name = 'path' },                              -- file paths
+        { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
+        { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
+        { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
+        { name = 'buffer', keyword_length = 2 },        -- source current buffer
+        { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
+        { name = 'calc'},                               -- source for math calculation
+      },
+      window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+      },
+      formatting = {
+          fields = {'menu', 'abbr', 'kind'},
+          format = function(entry, item)
+              local menu_icon ={
+                  nvim_lsp = 'λ',
+                  vsnip = '⋗',
+                  buffer = 'Ω',
+                  path = '🖫',
+              }
+              item.menu = menu_icon[entry.source.name]
+              return item
+          end,
+      },
+    })
+  end}
 
   -- LSP completion source:
   use 'hrsh7th/cmp-nvim-lsp'
@@ -203,223 +278,132 @@ packer = require('packer').startup(function(use)
 
   
   -- Git indicators
-  use 'lewis6991/gitsigns.nvim'
+  use {'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]]}
 
 
   -- Nicer bottom status bar
-  use {'nvim-lualine/lualine.nvim', requires = 'nvim-tree/nvim-web-devicons'}
+  use {
+    'nvim-lualine/lualine.nvim',
+    requires = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      -- disable the default vim footer
+      vim.opt.showmode = false
+      require('lualine').setup({
+        options = {
+          theme = 'onedark',
+          icons_enabled = true,
+          component_separators = '|',
+          section_separators = '',
+        },
+      })
+    end,
+  }
 
 
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  use 'williamboman/mason.nvim'    
+  use {'williamboman/mason.nvim', config = [[ require('mason').setup() ]]}
   use 'williamboman/mason-lspconfig.nvim'
 
 
   -- Nvim-tree, a file browser
   use 'nvim-tree/nvim-web-devicons'
-  use 'nvim-tree/nvim-tree.lua'
+  use {'nvim-tree/nvim-tree.lua', config = function()
+    require('nvim-tree').setup({
+      hijack_cursor = true,
+      sync_root_with_cwd = true,
+      actions = {
+        open_file = {
+          quit_on_open = true,
+        },
+      },
+      filters = {
+        dotfiles = false,
+      },
+      git = {
+        ignore = false,
+      },
+    })
+  end}
 
 
   -- Rust tooling support
   -- Cribbed from https://rsdlt.github.io/posts/rust-nvim-ide-guide-walkthrough-development-debug/
-  use 'simrat39/rust-tools.nvim'
+  use {'simrat39/rust-tools.nvim', config = function()
+    local rt = require("rust-tools")
+    rt.setup({
+      server = {
+        on_attach = function(_, bufnr)
+          -- Hover actions
+          vim.keymap.set("n", "<leader>h", rt.hover_actions.hover_actions, { buffer = bufnr })
+          -- Code action groups
+          vim.keymap.set("n", "<Leader>j", rt.code_action_group.code_action_group, { buffer = bufnr })
+        end,
+      },
+    })
+  end}
   use 'neovim/nvim-lspconfig' 
 
 
   -- Telescope, a file/anything search utility
   use {
-    'nvim-telescope/telescope.nvim', tag = '0.1.0',
-    requires = { {'nvim-lua/plenary.nvim'} }
+    'nvim-telescope/telescope.nvim',
+    tag = '0.1.0',
+    requires = { {'nvim-lua/plenary.nvim'} },
+    config = function()
+      require('telescope').setup({
+        extensions = {
+          fzf = {
+           fuzzy = true,                    -- false will only do exact matching
+            override_generic_sorter = true,  -- override the generic sorter
+            override_file_sorter = true,     -- override the file sorter
+            case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+                                             -- the default case_mode is "smart_case"
+          }
+        },
+        -- sadly there is some kind of race condition where treesitter tries to do cleanup on the preview buffer after it has been partially cleaned up which throws errors whenever the file picker is closed.
+        -- For now, preview must be disabled.
+        defaults = {
+          preview = false,
+        },
+      })
+    end
   }
-  use {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' }
+  use {
+    'nvim-telescope/telescope-fzf-native.nvim',
+    run = 'make',
+    config = [[ require('telescope').load_extension('fzf') ]],
+  }
 
   
   -- Treesitter
-  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate',
+    config = function()
+      require('nvim-treesitter.configs').setup {
+        ensure_installed = { "javascript", "json", "lua", "markdown", "python", "rust", "toml", "typescript" },
+        auto_install = true,
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting=false,
+        },
+        ident = { enable = true }, 
+        rainbow = {
+          enable = true,
+          extended_mode = true,
+          max_file_lines = nil,
+        }
+      }
+    end
+  }
+
+  -- TODO find a way to run this silently so that a manual :PackerSync isn't required after every configuration change
+  -- require('packer').sync()
 end)
 
 -- Attempt an installation during every launch
 -- For a fresh setup, no plugins will be configured on the first launch, but packer will install everything for the second launch.
 packer.install()
-
-
----------------------------------
--- Packer plugin configuration --
----------------------------------
-
--- All of this stuff will fail until the plugins are installed with :PackerInstall
-
-
--- bufferline tab rendering options
-require('bufferline').setup({
-  options = {
-    offsets = { { filetype = "NvimTree", padding = 0, separator = true } },
-    separator_style = "slant"
-  },
-  highlights = {
-    buffer_selected = {
-      italic = false,
-    },
-  },
-})
-
-
--- darkplus: set the colorscheme
-vim.cmd('colorscheme darkplus')
-
-
--- Comment hotkeys
--- hotkeys are defined in the hotkeys section
-require('Comment').setup({
-  mappings = false,
-})
-
-
--- Completion Plugin Setup
-local cmp = require'cmp'
-cmp.setup({
-  -- Enable LSP snippets
-  snippet = {
-    expand = function(args)
-        vim.fn["vsnip#anonymous"](args.body)
-    end,
-  },
-  mapping = {
-    ['<C-k>'] = cmp.mapping.select_prev_item(),
-    ['<C-j>'] = cmp.mapping.select_next_item(),
-    -- Add tab support
-    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-    ['<Tab>'] = cmp.mapping.select_next_item(),
-    ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm({
-      behavior = cmp.ConfirmBehavior.Insert,
-      select = true,
-    })
-  },
-  -- Installed sources:
-  sources = {
-    { name = 'path' },                              -- file paths
-    { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
-    { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
-    { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
-    { name = 'buffer', keyword_length = 2 },        -- source current buffer
-    { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
-    { name = 'calc'},                               -- source for math calculation
-  },
-  window = {
-      completion = cmp.config.window.bordered(),
-      documentation = cmp.config.window.bordered(),
-  },
-  formatting = {
-      fields = {'menu', 'abbr', 'kind'},
-      format = function(entry, item)
-          local menu_icon ={
-              nvim_lsp = 'λ',
-              vsnip = '⋗',
-              buffer = 'Ω',
-              path = '🖫',
-          }
-          item.menu = menu_icon[entry.source.name]
-          return item
-      end,
-  },
-})
-
-
--- gitsigns
-require('gitsigns').setup()
-
-
--- Lualine configuration
--- disable the default vim footer
-vim.opt.showmode = false
-require('lualine').setup({
-  options = {
-    theme = 'onedark',
-    icons_enabled = true,
-    component_separators = '|',
-    section_separators = '',
-  },
-})
-
-
--- Mason setup
-require('mason').setup()
-
-
--- Nvim-tree settings
-require('nvim-tree').setup({
-  hijack_cursor = true,
-  sync_root_with_cwd = true,
-  actions = {
-    open_file = {
-      quit_on_open = true,
-    },
-  },
-  filters = {
-    dotfiles = false,
-  },
-  git = {
-    ignore = false,
-  },
-})
-
-
-
--- Rust-tools keybinds
-local rt = require("rust-tools")
-rt.setup({
-  server = {
-    on_attach = function(_, bufnr)
-      -- Hover actions
-      vim.keymap.set("n", "<leader>h", rt.hover_actions.hover_actions, { buffer = bufnr })
-      -- Code action groups
-      vim.keymap.set("n", "<Leader>j", rt.code_action_group.code_action_group, { buffer = bufnr })
-    end,
-  },
-})
-
-
--- Telescope
-require('telescope').setup({
-  extensions = {
-    fzf = {
-     fuzzy = true,                    -- false will only do exact matching
-      override_generic_sorter = true,  -- override the generic sorter
-      override_file_sorter = true,     -- override the file sorter
-      case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
-                                       -- the default case_mode is "smart_case"
-    }
-  },
-  -- sadly there is some kind of race condition where treesitter tries to do cleanup on the preview buffer after it has been partially cleaned up which throws errors whenever the file picker is closed.
-  -- For now, preview must be disabled.
-  defaults = {
-    preview = false,
-  },
-})
-require('telescope').load_extension('fzf')
-
-
--- Treesitter
-require('nvim-treesitter.configs').setup {
-  ensure_installed = { "javascript", "json", "lua", "markdown", "python", "rust", "toml", "typescript" },
-  auto_install = true,
-  highlight = {
-    enable = true,
-    additional_vim_regex_highlighting=false,
-  },
-  ident = { enable = true }, 
-  rainbow = {
-    enable = true,
-    extended_mode = true,
-    max_file_lines = nil,
-  }
-}
-
-
 
 
