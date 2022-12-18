@@ -78,6 +78,17 @@ vim.keymap.set('n', '<C-w>', ':Bdelete<cr>', {desc = 'Close buffer'})
 -- Telescope
 vim.keymap.set('n', '<C-P>', '<cmd>Telescope find_files<cr>', {desc = 'Search files'})
 
+-- comment/uncomment
+-- linewise commenting
+vim.keymap.set({'n', 'i', 'c'}, '<C-_>', function()
+  require('Comment.api').toggle.linewise.current()
+end, {desc = 'Toggle comments'})
+vim.keymap.set('v', '<C-_>', function()
+  local esc = vim.api.nvim_replace_termcodes('<ESC>', true, false, true)
+  vim.api.nvim_feedkeys(esc, 'nx', false)
+  require('Comment.api').toggle.linewise(vim.fn.visualmode())
+end, {desc = 'Toggle comments'})
+
 
 --------------------------
 -- Diagnostics settings --
@@ -120,6 +131,16 @@ autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
 -- lower the cursor hover time from 4s to 1s
 vim.opt.updatetime = 1000
 
+--Set completeopt to have a better completion experience
+-- :help completeopt
+-- menuone: popup even when there's only one match
+-- noinsert: Do not insert text until a selection is made
+-- noselect: Do not select, force to select one from the menu
+-- shortness: avoid showing extra messages when using completion
+-- updatetime: set updatetime for CursorHold
+vim.opt.completeopt = {'menuone', 'noselect', 'noinsert', 'preview'}
+vim.opt.shortmess = vim.opt.shortmess + { c = true}
+
 
 --------------------
 -- Packer Plugins --
@@ -158,6 +179,10 @@ packer = require('packer').startup(function(use)
   use 'martinsione/darkplus.nvim'
 
 
+  -- Comment/uncomment commands
+  use 'numToStr/Comment.nvim'
+  
+
   ---------------------
   -- Code completion --
   ---------------------
@@ -173,9 +198,8 @@ packer = require('packer').startup(function(use)
   use 'hrsh7th/cmp-nvim-lsp-signature-help'
   use 'hrsh7th/cmp-path'                              
   use 'hrsh7th/cmp-buffer'                            
-  -- I'm not using snippets right now, but I might want to later
-  -- use 'hrsh7th/cmp-vsnip'                             
-  -- use 'hrsh7th/vim-vsnip'
+  use 'hrsh7th/cmp-vsnip'                             
+  use 'hrsh7th/vim-vsnip'
 
 
   -- Nicer bottom status bar
@@ -241,6 +265,67 @@ require('bufferline').setup({
 vim.cmd('colorscheme darkplus')
 
 
+-- Comment hotkeys
+-- hotkeys are defined in the hotkeys section
+require('Comment').setup({
+  mappings = false,
+})
+
+
+-- Completion Plugin Setup
+local cmp = require'cmp'
+cmp.setup({
+  -- Enable LSP snippets
+  snippet = {
+    expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body)
+    end,
+  },
+  mapping = {
+    ['<C-k>'] = cmp.mapping.select_prev_item(),
+    ['<C-j>'] = cmp.mapping.select_next_item(),
+    -- Add tab support
+    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+    ['<Tab>'] = cmp.mapping.select_next_item(),
+    ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({
+      behavior = cmp.ConfirmBehavior.Insert,
+      select = true,
+    })
+  },
+  -- Installed sources:
+  sources = {
+    { name = 'path' },                              -- file paths
+    { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
+    { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
+    { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
+    { name = 'buffer', keyword_length = 2 },        -- source current buffer
+    { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
+    { name = 'calc'},                               -- source for math calculation
+  },
+  window = {
+      completion = cmp.config.window.bordered(),
+      documentation = cmp.config.window.bordered(),
+  },
+  formatting = {
+      fields = {'menu', 'abbr', 'kind'},
+      format = function(entry, item)
+          local menu_icon ={
+              nvim_lsp = 'λ',
+              vsnip = '⋗',
+              buffer = 'Ω',
+              path = '🖫',
+          }
+          item.menu = menu_icon[entry.source.name]
+          return item
+      end,
+  },
+})
+
+
 -- Lualine configuration
 -- disable the default vim footer
 vim.opt.showmode = false
@@ -268,8 +353,11 @@ require('nvim-tree').setup({
     },
   },
   filters = {
-    dotfiles = true,
-  }
+    dotfiles = false,
+  },
+  git = {
+    ignore = false,
+  },
 })
 
 
@@ -298,12 +386,31 @@ require('telescope').setup({
       case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
                                        -- the default case_mode is "smart_case"
     }
-  }
+  },
+  -- sadly there is some kind of race condition where treesitter tries to do cleanup on the preview buffer after it has been partially cleaned up which throws errors whenever the file picker is closed.
+  -- For now, preview must be disabled.
+  defaults = {
+    preview = false,
+  },
 })
 require('telescope').load_extension('fzf')
 
 
-
+-- Treesitter
+require('nvim-treesitter.configs').setup {
+  ensure_installed = { "javascript", "json", "lua", "markdown", "python", "rust", "toml", "typescript" },
+  auto_install = true,
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting=false,
+  },
+  ident = { enable = true }, 
+  rainbow = {
+    enable = true,
+    extended_mode = true,
+    max_file_lines = nil,
+  }
+}
 
 
 
