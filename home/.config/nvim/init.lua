@@ -201,6 +201,10 @@ packer = require('packer').startup(function(use)
   use 'hrsh7th/cmp-vsnip'                             
   use 'hrsh7th/vim-vsnip'
 
+  
+  -- Git indicators
+  use 'lewis6991/gitsigns.nvim'
+
 
   -- Nicer bottom status bar
   use {'nvim-lualine/lualine.nvim', requires = 'nvim-tree/nvim-web-devicons'}
@@ -324,6 +328,10 @@ cmp.setup({
       end,
   },
 })
+
+
+-- gitsigns
+require('gitsigns').setup()
 
 
 -- Lualine configuration
