@@ -37,8 +37,8 @@ vim.cmd(':cabbrev h vert h')
 vim.cmd(':cabbrev help vert help')
 
 -- format on save
-vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
-vim.cmd([[ autocmd BufWritePre * lua print('aaaaah') ]])
+-- TODO figure out how avoid obnoxious "couldn't format" message on non-.rs files
+vim.cmd([[autocmd BufWritePre *.rs lua vim.lsp.buf.format({ async = false })]])
 
 ------------------------------------
 -- Neovide specific configuration --
