@@ -47,6 +47,9 @@ vim.cmd([[autocmd BufWritePre *.rs lua vim.lsp.buf.format({ async = false })]])
 
 if vim.fn.exists('g:neovide') then
   vim.opt.guifont = 'Cousine,Fira Mono:h8'
+  vim.g.neovide_hide_mouse_when_typing = true
+  vim.opt.title = true
+  vim.opt.titlestring = vim.env.PWD
 end
 
 
