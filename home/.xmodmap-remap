@@ -6,6 +6,13 @@ remove mod4 = Super_L
 add mod1 = Super_L
 add mod4 = Alt_L
 
+!
+! Swap Alt_R and Super_R
+!
+remove mod1 = Alt_R
+remove mod4 = Super_R
+add mod1 = Super_R
+add mod4 = Alt_R
 
 !
 ! Set Caps Lock to Escape
