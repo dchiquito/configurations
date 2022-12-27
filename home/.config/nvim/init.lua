@@ -66,20 +66,28 @@ vim.keymap.set({'', 'i', 'c'}, '<C-s>', '<cmd>write<cr>', {desc = 'Save'})
 vim.keymap.set('n', '<leader>a', '<cmd>NvimTreeToggle<cr>', {desc = 'Toggle nvim-tree'})
 
 -- switch tabs
-vim.keymap.set({'', 'i', 'c'}, '<C-H>', '<cmd>bp<cr>', {desc = 'Previous buffer'})
-vim.keymap.set({'', 'i', 'c'}, '<C-L>', '<cmd>bn<cr>', {desc = 'Next buffer'})
+vim.keymap.set({'', 'c'}, '<S-Tab>', '<cmd>bp<cr>', {desc = 'Previous buffer'})
+vim.keymap.set({'', 'c'}, '<Tab>', '<cmd>bn<cr>', {desc = 'Next buffer'})
 
 -- go fast
+vim.keymap.set({'', 'i', 'c'}, '<C-L>', 'w', {})
 vim.keymap.set({'', 'i', 'c'}, '<C-J>', '<C-D>', {})
 vim.keymap.set({'', 'i', 'c'}, '<C-K>', '<C-U>', {})
+vim.keymap.set({'', 'i', 'c'}, '<C-H>', 'b', {})
 
 -- switch windows
 vim.keymap.set('n', '<S-H>', '<c-W>h', {desc = 'Left window'})
 vim.keymap.set('n', '<S-J>', '<C-W>j', {desc = 'Down window'})
 vim.keymap.set('n', '<S-K>', '<c-W>k', {desc = 'Up window'})
 vim.keymap.set('n', '<S-L>', '<C-W>l', {desc = 'Right window'})
+-- split window
+vim.keymap.set('n', '<C-W>v', '<cmd>vsplit<cr>', {desc = 'Split window vertically'})
+vim.keymap.set('n', '<C-W>h', '<cmd>split<cr>', {desc = 'Split window horizontally'})
 -- close window
-vim.keymap.set('n', '<C-w>', ':Bdelete<cr>', {desc = 'Close buffer'})
+vim.keymap.set('n', '<leader>q', ':q<cr>', {desc = 'Close window'})
+
+-- close buffer
+vim.keymap.set('n', '<leader>x', ':Bdelete<cr>', {desc = 'Close buffer'})
 
 -- Telescope
 vim.keymap.set('n', '<C-P>', '<cmd>Telescope find_files<cr>', {desc = 'Search files'})
