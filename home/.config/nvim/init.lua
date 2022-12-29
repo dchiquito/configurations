@@ -220,7 +220,7 @@ packer = require('packer').startup(function(use)
   -- hotkeys are defined in the hotkeys section
   use {'numToStr/Comment.nvim', config = function()
     require('Comment').setup({
-      mappings = false
+      mappings = false,
     })
   end}
   
@@ -367,6 +367,15 @@ packer = require('packer').startup(function(use)
           -- Code action groups
           vim.keymap.set("n", "<Leader>j", rt.code_action_group.code_action_group, { buffer = bufnr })
         end,
+        settings = {
+          ["rust-analyzer"] = {
+          -- enable clippy on save
+            checkOnSave = {
+              -- TODO this doesn't work???
+              command = "clippy",
+            },
+          },
+        },
       },
     })
   end}
