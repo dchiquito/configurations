@@ -332,7 +332,14 @@ packer = require('packer').startup(function(use)
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
   use {'williamboman/mason.nvim', config = [[ require('mason').setup() ]]}
-  use 'williamboman/mason-lspconfig.nvim'
+  use {'williamboman/mason-lspconfig.nvim', config = function()
+    require('mason-lspconfig').setup()
+    require('mason-lspconfig').setup_handlers({
+      function(server_name)
+        require("lspconfig")[server_name].setup({})
+      end,
+    })
+  end}
 
 
   -- Nvim-tree, a file browser
