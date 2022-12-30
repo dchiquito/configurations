@@ -1,5 +1,8 @@
 -- Cribbing from https://vonheikemen.github.io/devlog/tools/build-your-first-lua-config-for-neovim/
 
+-- Set a local variable to cut down on warnings about undefined global 'vim'.
+local vim = vim
+
 
 --------------------------------------
 -- Generic vim options and settings --
@@ -38,7 +41,7 @@ vim.cmd(':cabbrev help vert help')
 
 -- format on save
 -- TODO figure out how avoid obnoxious "couldn't format" message on non-.rs files
-vim.cmd([[autocmd BufWritePre *.rs lua vim.lsp.buf.format({ async = false })]])
+vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
 
 ------------------------------------
 -- Neovide specific configuration --
@@ -59,55 +62,55 @@ end
 
 
 -- save shortcut
-vim.keymap.set('n', '<leader>w', '<cmd>write<cr>', {desc = 'Save'})
-vim.keymap.set({'', 'i', 'c'}, '<C-s>', '<cmd>write<cr>', {desc = 'Save'})
+vim.keymap.set('n', '<leader>w', '<cmd>write<cr>', { desc = 'Save' })
+vim.keymap.set({ '', 'i', 'c' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save' })
 
 -- toggle nvim-tree
-vim.keymap.set('n', '<leader>a', '<cmd>NvimTreeToggle<cr>', {desc = 'Toggle nvim-tree'})
+vim.keymap.set('n', '<leader>a', '<cmd>NvimTreeToggle<cr>', { desc = 'Toggle nvim-tree' })
 
 -- switch tabs
-vim.keymap.set({'', 'c'}, '<S-Tab>', '<cmd>bp<cr>', {desc = 'Previous buffer'})
-vim.keymap.set({'', 'c'}, '<Tab>', '<cmd>bn<cr>', {desc = 'Next buffer'})
+vim.keymap.set({ '', 'c' }, '<S-Tab>', '<cmd>bp<cr>', { desc = 'Previous buffer' })
+vim.keymap.set({ '', 'c' }, '<Tab>', '<cmd>bn<cr>', { desc = 'Next buffer' })
 
 -- go fast
-vim.keymap.set({'', 'i', 'c'}, '<C-L>', 'w', {})
-vim.keymap.set({'', 'i', 'c'}, '<C-J>', '<C-D>', {})
-vim.keymap.set({'', 'i', 'c'}, '<C-K>', '<C-U>', {})
-vim.keymap.set({'', 'i', 'c'}, '<C-H>', 'b', {})
+vim.keymap.set({ '', 'i', 'c' }, '<C-L>', 'w', {})
+vim.keymap.set({ '', 'i', 'c' }, '<C-J>', '<C-D>', {})
+vim.keymap.set({ '', 'i', 'c' }, '<C-K>', '<C-U>', {})
+vim.keymap.set({ '', 'i', 'c' }, '<C-H>', 'b', {})
 
 -- switch windows
-vim.keymap.set('n', '<S-H>', '<c-W>h', {desc = 'Left window'})
-vim.keymap.set('n', '<S-J>', '<C-W>j', {desc = 'Down window'})
-vim.keymap.set('n', '<S-K>', '<c-W>k', {desc = 'Up window'})
-vim.keymap.set('n', '<S-L>', '<C-W>l', {desc = 'Right window'})
+vim.keymap.set('n', '<S-H>', '<c-W>h', { desc = 'Left window' })
+vim.keymap.set('n', '<S-J>', '<C-W>j', { desc = 'Down window' })
+vim.keymap.set('n', '<S-K>', '<c-W>k', { desc = 'Up window' })
+vim.keymap.set('n', '<S-L>', '<C-W>l', { desc = 'Right window' })
 -- split window
-vim.keymap.set('n', '<C-W>v', '<cmd>vsplit<cr>', {desc = 'Split window vertically'})
-vim.keymap.set('n', '<C-W>h', '<cmd>split<cr>', {desc = 'Split window horizontally'})
+vim.keymap.set('n', '<C-W>v', '<cmd>vsplit<cr>', { desc = 'Split window vertically' })
+vim.keymap.set('n', '<C-W>h', '<cmd>split<cr>', { desc = 'Split window horizontally' })
 -- close window
-vim.keymap.set('n', '<leader>q', ':q<cr>', {desc = 'Close window'})
+vim.keymap.set('n', '<leader>q', ':q<cr>', { desc = 'Close window' })
 
 -- close buffer
-vim.keymap.set('n', '<leader>x', ':Bdelete<cr>', {desc = 'Close buffer'})
+vim.keymap.set('n', '<leader>x', ':Bdelete<cr>', { desc = 'Close buffer' })
 
 -- Telescope
-vim.keymap.set('n', '<C-p>', '<cmd>Telescope find_files<cr>', {desc = 'Open a file picker'})
-vim.keymap.set('n', '<C-f>', '<cmd>Telescope live_grep<cr>', {desc = 'Search files for text'})
+vim.keymap.set('n', '<C-p>', '<cmd>Telescope find_files<cr>', { desc = 'Open a file picker' })
+vim.keymap.set('n', '<C-f>', '<cmd>Telescope live_grep<cr>', { desc = 'Search files for text' })
 
 -- hop
-vim.keymap.set('', '<leader>n', '<cmd>HopWord<cr>', {desc = 'Hop to a word'})
-vim.keymap.set('', '<leader>m', '<cmd>HopLineStart<cr>', {desc = 'Hop to a line'})
-vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLine<cr>', {desc = 'Hop to a word on the current line'})
+vim.keymap.set('', '<leader>n', '<cmd>HopWord<cr>', { desc = 'Hop to a word' })
+vim.keymap.set('', '<leader>m', '<cmd>HopLineStart<cr>', { desc = 'Hop to a line' })
+vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLine<cr>', { desc = 'Hop to a word on the current line' })
 
 -- comment/uncomment
 -- linewise commenting
-vim.keymap.set({'n', 'i', 'c'}, '<C-/>', function()
+vim.keymap.set({ 'n', 'i', 'c' }, '<C-/>', function()
   require('Comment.api').toggle.linewise.current()
-end, {desc = 'Toggle comments'})
+end, { desc = 'Toggle comments' })
 vim.keymap.set('v', '<C-/>', function()
   local esc = vim.api.nvim_replace_termcodes('<ESC>', true, false, true)
   vim.api.nvim_feedkeys(esc, 'nx', false)
   require('Comment.api').toggle.linewise(vim.fn.visualmode())
-end, {desc = 'Toggle comments'})
+end, { desc = 'Toggle comments' })
 
 
 --------------------------
@@ -115,32 +118,32 @@ end, {desc = 'Toggle comments'})
 --------------------------
 
 
--- LSP Diagnostics Options Setup 
+-- LSP Diagnostics Options Setup
 local sign = function(opts)
   vim.fn.sign_define(opts.name, {
     texthl = opts.name,
     text = opts.text,
     numhl = ''
   })
- end
+end
 
-sign({name = 'DiagnosticSignError', text = ''})
-sign({name = 'DiagnosticSignWarn', text = ''})
-sign({name = 'DiagnosticSignHint', text = ''})
-sign({name = 'DiagnosticSignInfo', text = ''})
+sign({ name = 'DiagnosticSignError', text = '' })
+sign({ name = 'DiagnosticSignWarn', text = '' })
+sign({ name = 'DiagnosticSignHint', text = '' })
+sign({ name = 'DiagnosticSignInfo', text = '' })
 
 vim.diagnostic.config({
-    virtual_text = true,
-    signs = true,
-    update_in_insert = true,
-    underline = true,
-    severity_sort = false,
-    float = {
-        border = 'rounded',
-        source = 'always',
-        header = '',
-        prefix = '',
-    },
+  virtual_text = true,
+  signs = true,
+  update_in_insert = true,
+  underline = true,
+  severity_sort = false,
+  float = {
+    border = 'rounded',
+    source = 'always',
+    header = '',
+    prefix = '',
+  },
 })
 
 -- automatically open diagnostic info on cursor hover
@@ -158,8 +161,8 @@ vim.opt.updatetime = 1000
 -- noselect: Do not select, force to select one from the menu
 -- shortness: avoid showing extra messages when using completion
 -- updatetime: set updatetime for CursorHold
-vim.opt.completeopt = {'menuone', 'noselect', 'noinsert', 'preview'}
-vim.opt.shortmess = vim.opt.shortmess + { c = true}
+vim.opt.completeopt = { 'menuone', 'noselect', 'noinsert', 'preview' }
+vim.opt.shortmess = vim.opt.shortmess + { c = true }
 
 
 --------------------
@@ -175,19 +178,19 @@ local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.n
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   print('Installing packer...')
   local packer_url = 'https://github.com/wbthomason/packer.nvim'
-  vim.fn.system({'git', 'clone', '--depth', '1', packer_url, install_path})
+  vim.fn.system({ 'git', 'clone', '--depth', '1', packer_url, install_path })
   print('Done.')
 
   vim.cmd('packadd packer.nvim')
 end
-packer = require('packer').startup(function(use)
+local packer = require('packer').startup(function(use)
   -- Packer manages itself
   use 'wbthomason/packer.nvim'
 
 
   -- .editorconfig file support
   use 'editorconfig/editorconfig-vim'
-  
+
 
   -- Enhanced window closing ability
   use 'moll/vim-bbye'
@@ -214,30 +217,30 @@ packer = require('packer').startup(function(use)
 
 
   -- A color scheme like VSCodes
-  use {'martinsione/darkplus.nvim', config = [[ vim.cmd('colorscheme darkplus') ]]}
+  use { 'martinsione/darkplus.nvim', config = [[ vim.cmd('colorscheme darkplus') ]] }
 
 
   -- Comment/uncomment commands
   -- hotkeys are defined in the hotkeys section
-  use {'numToStr/Comment.nvim', config = function()
+  use { 'numToStr/Comment.nvim', config = function()
     require('Comment').setup({
       mappings = false,
     })
-  end}
-  
+  end }
+
 
   ---------------------
   -- Code completion --
   ---------------------
 
   -- Completion framework:
-  use {'hrsh7th/nvim-cmp', config = function()
-    local cmp = require'cmp'
+  use { 'hrsh7th/nvim-cmp', config = function()
+    local cmp = require 'cmp'
     cmp.setup({
       -- Enable LSP snippets
       snippet = {
         expand = function(args)
-            vim.fn["vsnip#anonymous"](args.body)
+          vim.fn["vsnip#anonymous"](args.body)
         end,
       },
       mapping = {
@@ -257,33 +260,33 @@ packer = require('packer').startup(function(use)
       },
       -- Installed sources:
       sources = {
-        { name = 'path' },                              -- file paths
-        { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
-        { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
-        { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
-        { name = 'buffer', keyword_length = 2 },        -- source current buffer
-        { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
-        { name = 'calc'},                               -- source for math calculation
+        { name = 'path' }, -- file paths
+        { name = 'nvim_lsp', keyword_length = 3 }, -- from language server
+        { name = 'nvim_lsp_signature_help' }, -- display function signatures with current parameter emphasized
+        { name = 'nvim_lua', keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
+        { name = 'buffer', keyword_length = 2 }, -- source current buffer
+        { name = 'vsnip', keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
+        { name = 'calc' }, -- source for math calculation
       },
       window = {
-          completion = cmp.config.window.bordered(),
-          documentation = cmp.config.window.bordered(),
+        completion = cmp.config.window.bordered(),
+        documentation = cmp.config.window.bordered(),
       },
       formatting = {
-          fields = {'menu', 'abbr', 'kind'},
-          format = function(entry, item)
-              local menu_icon ={
-                  nvim_lsp = 'λ',
-                  vsnip = '⋗',
-                  buffer = 'Ω',
-                  path = '🖫',
-              }
-              item.menu = menu_icon[entry.source.name]
-              return item
-          end,
+        fields = { 'menu', 'abbr', 'kind' },
+        format = function(entry, item)
+          local menu_icon = {
+            nvim_lsp = 'λ',
+            vsnip = '⋗',
+            buffer = 'Ω',
+            path = '🖫',
+          }
+          item.menu = menu_icon[entry.source.name]
+          return item
+        end,
       },
     })
-  end}
+  end }
 
   -- LSP completion source:
   use 'hrsh7th/cmp-nvim-lsp'
@@ -291,14 +294,14 @@ packer = require('packer').startup(function(use)
   -- Useful completion sources:
   use 'hrsh7th/cmp-nvim-lua'
   use 'hrsh7th/cmp-nvim-lsp-signature-help'
-  use 'hrsh7th/cmp-path'                              
-  use 'hrsh7th/cmp-buffer'                            
-  use 'hrsh7th/cmp-vsnip'                             
+  use 'hrsh7th/cmp-path'
+  use 'hrsh7th/cmp-buffer'
+  use 'hrsh7th/cmp-vsnip'
   use 'hrsh7th/vim-vsnip'
 
-  
+
   -- Git indicators
-  use {'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]]}
+  use { 'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]] }
 
 
   -- Hop
@@ -331,20 +334,20 @@ packer = require('packer').startup(function(use)
 
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  use {'williamboman/mason.nvim', config = [[ require('mason').setup() ]]}
-  use {'williamboman/mason-lspconfig.nvim', config = function()
+  use { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] }
+  use { 'williamboman/mason-lspconfig.nvim', config = function()
     require('mason-lspconfig').setup()
     require('mason-lspconfig').setup_handlers({
       function(server_name)
         require("lspconfig")[server_name].setup({})
       end,
     })
-  end}
+  end }
 
 
   -- Nvim-tree, a file browser
   use 'nvim-tree/nvim-web-devicons'
-  use {'nvim-tree/nvim-tree.lua', config = function()
+  use { 'nvim-tree/nvim-tree.lua', config = function()
     require('nvim-tree').setup({
       hijack_cursor = true,
       sync_root_with_cwd = true,
@@ -360,12 +363,12 @@ packer = require('packer').startup(function(use)
         ignore = false,
       },
     })
-  end}
+  end }
 
 
   -- Rust tooling support
   -- Cribbed from https://rsdlt.github.io/posts/rust-nvim-ide-guide-walkthrough-development-debug/
-  use {'simrat39/rust-tools.nvim', config = function()
+  use { 'simrat39/rust-tools.nvim', config = function()
     local rt = require("rust-tools")
     rt.setup({
       server = {
@@ -377,7 +380,7 @@ packer = require('packer').startup(function(use)
         end,
         settings = {
           ["rust-analyzer"] = {
-          -- enable clippy on save
+            -- enable clippy on save
             checkOnSave = {
               command = "clippy",
             },
@@ -385,7 +388,7 @@ packer = require('packer').startup(function(use)
         },
       },
     })
-  end}
+  end }
   use 'neovim/nvim-lspconfig'
 
 
@@ -393,16 +396,16 @@ packer = require('packer').startup(function(use)
   use {
     'nvim-telescope/telescope.nvim',
     tag = '0.1.0',
-    requires = { {'nvim-lua/plenary.nvim'} },
+    requires = { { 'nvim-lua/plenary.nvim' } },
     config = function()
       require('telescope').setup({
         extensions = {
           fzf = {
-           fuzzy = true,                    -- false will only do exact matching
-            override_generic_sorter = true,  -- override the generic sorter
-            override_file_sorter = true,     -- override the file sorter
-            case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
-                                             -- the default case_mode is "smart_case"
+            fuzzy = true, -- false will only do exact matching
+            override_generic_sorter = true, -- override the generic sorter
+            override_file_sorter = true, -- override the file sorter
+            case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+            -- the default case_mode is "smart_case"
           }
         },
         -- sadly there is some kind of race condition where treesitter tries to do cleanup on the preview buffer after it has been partially cleaned up which throws errors whenever the file picker is closed.
@@ -419,7 +422,7 @@ packer = require('packer').startup(function(use)
     config = [[ require('telescope').load_extension('fzf') ]],
   }
 
-  
+
   -- Treesitter
   use {
     'nvim-treesitter/nvim-treesitter',
@@ -430,9 +433,9 @@ packer = require('packer').startup(function(use)
         auto_install = true,
         highlight = {
           enable = true,
-          additional_vim_regex_highlighting=false,
+          additional_vim_regex_highlighting = false,
         },
-        ident = { enable = true }, 
+        ident = { enable = true },
         rainbow = {
           enable = true,
           extended_mode = true,
@@ -449,5 +452,3 @@ end)
 -- Attempt an installation during every launch
 -- For a fresh setup, no plugins will be configured on the first launch, but packer will install everything for the second launch.
 packer.install()
-
-
