@@ -1,7 +1,7 @@
 -- Cribbing from https://vonheikemen.github.io/devlog/tools/build-your-first-lua-config-for-neovim/
 
 -- Set a local variable to cut down on warnings about undefined global 'vim'.
-local vim = vim
+vim = vim
 
 
 --------------------------------------
