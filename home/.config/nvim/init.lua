@@ -90,8 +90,8 @@ vim.keymap.set('n', '<leader>q', ':q<cr>', {desc = 'Close window'})
 vim.keymap.set('n', '<leader>x', ':Bdelete<cr>', {desc = 'Close buffer'})
 
 -- Telescope
-vim.keymap.set('n', '<C-P>', '<cmd>Telescope find_files<cr>', {desc = 'Open a file picker'})
-vim.keymap.set('n', '<C-S-P>', '<cmd>Telescope live_grep<cr>', {desc = 'Search files for text'})
+vim.keymap.set('n', '<C-p>', '<cmd>Telescope find_files<cr>', {desc = 'Open a file picker'})
+vim.keymap.set('n', '<C-f>', '<cmd>Telescope live_grep<cr>', {desc = 'Search files for text'})
 
 -- hop
 vim.keymap.set('', '<leader>n', '<cmd>HopWord<cr>', {desc = 'Hop to a word'})
