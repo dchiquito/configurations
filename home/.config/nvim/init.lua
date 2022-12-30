@@ -372,7 +372,6 @@ packer = require('packer').startup(function(use)
           ["rust-analyzer"] = {
           -- enable clippy on save
             checkOnSave = {
-              -- TODO this doesn't work???
               command = "clippy",
             },
           },
@@ -380,7 +379,7 @@ packer = require('packer').startup(function(use)
       },
     })
   end}
-  use 'neovim/nvim-lspconfig' 
+  use 'neovim/nvim-lspconfig'
 
 
   -- Telescope, a file/anything search utility
@@ -436,8 +435,8 @@ packer = require('packer').startup(function(use)
     end
   }
 
-  -- TODO find a way to run this silently so that a manual :PackerSync isn't required after every configuration change
-  -- require('packer').sync()
+  -- Recompile the packer configurations so that any changes made are applied
+  require('packer').compile()
 end)
 
 -- Attempt an installation during every launch
