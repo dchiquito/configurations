@@ -96,9 +96,12 @@ vim.keymap.set('n', '<C-p>', '<cmd>Telescope find_files<cr>', { desc = 'Open a f
 vim.keymap.set('n', '<C-f>', '<cmd>Telescope live_grep<cr>', { desc = 'Search files for text' })
 
 -- hop
-vim.keymap.set('', '<leader>n', '<cmd>HopWord<cr>', { desc = 'Hop to a word' })
-vim.keymap.set('', '<leader>m', '<cmd>HopLineStart<cr>', { desc = 'Hop to a line' })
-vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLine<cr>', { desc = 'Hop to a word on the current line' })
+vim.keymap.set('', '<leader>h', '<cmd>HopWordCurrentLineBC<cr>',
+  { desc = 'Hop to a word before the cursor on the same line' })
+vim.keymap.set('', '<leader>j', '<cmd>HopWordAC<cr>', { desc = 'Hop to a word after the cursor' })
+vim.keymap.set('', '<leader>k', '<cmd>HopWordBC<cr>', { desc = 'Hop to a word before the cursor' })
+vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLineAC<cr>',
+  { desc = 'Hop to a word after the cursor on the current line' })
 
 -- comment/uncomment
 -- linewise commenting
@@ -306,7 +309,9 @@ local packer = require('packer').startup(function(use)
   -- Hop
   use {
     'phaazon/hop.nvim',
-    branch = 'v2', -- optional but strongly recommended
+    -- fixes a bug where trying to hop up/down on an empty line crashes
+    commit = 'caaccee',
+    -- branch = 'v2', -- optional but strongly recommended
     config = function()
       require('hop').setup({ keys = 'etovxqpdygfblzhckisuran' })
     end
@@ -339,9 +344,9 @@ local packer = require('packer').startup(function(use)
     require('mason-lspconfig').setup()
     local on_attach = function(client, bufnr)
       local bufopts = { noremap = true, silent = true, buffer = bufnr }
-      if client.server_capabilities.hoverProvider then
-        vim.keymap.set('n', '<leader>h', vim.lsp.buf.hover, bufopts)
-      end
+      vim.keymap.set('n', '<leader>n', require('rust-tools').hover_actions.hover_actions, bufopts)
+      vim.keymap.set('n', '<leader>m', require('rust-tools').code_action_group.code_action_group, bufopts)
+      vim.keymap.set('n', '<leader>i', vim.lsp.buf.implementation, bufopts)
     end
     require('mason-lspconfig').setup_handlers({
       function(server_name)
@@ -349,12 +354,7 @@ local packer = require('packer').startup(function(use)
         if server_name == 'rust_analyzer' then
           require("rust-tools").setup({
             server = {
-              on_attach = function(client, bufnr)
-                on_attach(client, bufnr)
-                -- Use the special rust-tools hover_actions instead
-                local bufopts = { noremap = true, silent = true, buffer = bufnr }
-                vim.keymap.set('n', '<leader>h', vim.cmd.RustHoverActions, bufopts)
-              end,
+              on_attach = on_attach,
               settings = {
                 ["rust-analyzer"] = {
                   -- clippy check on save
