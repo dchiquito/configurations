@@ -40,7 +40,6 @@ vim.cmd(':cabbrev h vert h')
 vim.cmd(':cabbrev help vert help')
 
 -- format on save
--- TODO figure out how avoid obnoxious "couldn't format" message on non-.rs files
 vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
 
 ------------------------------------
@@ -332,17 +331,50 @@ local packer = require('packer').startup(function(use)
   }
 
 
+  vim.lsp.set_log_level('debug')
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
   use { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] }
   use { 'williamboman/mason-lspconfig.nvim', config = function()
     require('mason-lspconfig').setup()
+    local on_attach = function(client, bufnr)
+      local bufopts = { noremap = true, silent = true, buffer = bufnr }
+      if client.server_capabilities.hoverProvider then
+        vim.keymap.set('n', '<leader>h', vim.lsp.buf.hover, bufopts)
+      end
+    end
     require('mason-lspconfig').setup_handlers({
       function(server_name)
-        require("lspconfig")[server_name].setup({})
+        -- Rust LSP support is handled specially using rust-tools
+        if server_name == 'rust_analyzer' then
+          require("rust-tools").setup({
+            server = {
+              on_attach = function(client, bufnr)
+                on_attach(client, bufnr)
+                -- Use the special rust-tools hover_actions instead
+                local bufopts = { noremap = true, silent = true, buffer = bufnr }
+                vim.keymap.set('n', '<leader>h', vim.cmd.RustHoverActions, bufopts)
+              end,
+              settings = {
+                ["rust-analyzer"] = {
+                  -- clippy check on save
+                  checkOnSave = {
+                    command = "clippy",
+                  },
+                },
+              },
+            },
+          })
+        else
+          require("lspconfig")[server_name].setup({
+            on_attach = on_attach
+          })
+        end
       end,
     })
   end }
+  use 'neovim/nvim-lspconfig'
+  use 'simrat39/rust-tools.nvim'
 
 
   -- Nvim-tree, a file browser
@@ -364,32 +396,6 @@ local packer = require('packer').startup(function(use)
       },
     })
   end }
-
-
-  -- Rust tooling support
-  -- Cribbed from https://rsdlt.github.io/posts/rust-nvim-ide-guide-walkthrough-development-debug/
-  use { 'simrat39/rust-tools.nvim', config = function()
-    local rt = require("rust-tools")
-    rt.setup({
-      server = {
-        on_attach = function(_, bufnr)
-          -- Hover actions
-          vim.keymap.set("n", "<leader>h", rt.hover_actions.hover_actions, { buffer = bufnr })
-          -- Code action groups
-          vim.keymap.set("n", "<Leader>j", rt.code_action_group.code_action_group, { buffer = bufnr })
-        end,
-        settings = {
-          ["rust-analyzer"] = {
-            -- enable clippy on save
-            checkOnSave = {
-              command = "clippy",
-            },
-          },
-        },
-      },
-    })
-  end }
-  use 'neovim/nvim-lspconfig'
 
 
   -- Telescope, a file/anything search utility
