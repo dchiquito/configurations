@@ -90,6 +90,7 @@ vim.keymap.set('n', '<leader>q', ':q<cr>', { desc = 'Close window' })
 
 -- close buffer
 vim.keymap.set('n', '<leader>x', ':Bdelete<cr>', { desc = 'Close buffer' })
+vim.keymap.set('n', '<leader>z', ':%bd|e#|bd#<cr>|\'"', { desc = 'Close all other buffers' })
 
 -- Telescope
 vim.keymap.set('n', '<C-p>', '<cmd>Telescope find_files<cr>', { desc = 'Open a file picker' })
