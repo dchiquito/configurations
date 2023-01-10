@@ -1,7 +1,7 @@
 # zsh/oh-my-zsh
 export ZSH="/home/${USER}/.oh-my-zsh"
 ZSH_THEME="dchiquito"
-ZSH_CUSTOM=~/git/zsh-custom
+ZSH_CUSTOM=~/.zsh-custom/
 plugins=(git python docker tmux virtualenv virtualenvwrapper dotenv cdg gitinit autojump)
 
 # Uncomment the following line if you want to disable marking untracked files
