@@ -115,6 +115,11 @@ vim.keymap.set('v', '<C-/>', function()
   require('Comment.api').toggle.linewise(vim.fn.visualmode())
 end, { desc = 'Toggle comments' })
 
+-- coverage
+vim.keymap.set('', '<leader>cc', ':Coverage<cr>', { desc = 'Load and show coverage report' })
+vim.keymap.set('', '<leader>cs', ':CoverageShow<cr>', { desc = 'Show coverage report' })
+vim.keymap.set('', '<leader>ch', ':CoverageHide<cr>', { desc = 'Hide coverage report' })
+vim.keymap.set('', '<leader>c', ':CoverageSummary<cr>', { desc = 'Show coverage report summary' })
 
 --------------------------
 -- Diagnostics settings --
@@ -337,7 +342,6 @@ local packer = require('packer').startup(function(use)
   }
 
 
-  vim.lsp.set_log_level('debug')
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
   use { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] }
@@ -450,6 +454,15 @@ local packer = require('packer').startup(function(use)
         }
       }
     end
+  }
+
+  -- Test coverage
+  use {
+    'andythigpen/nvim-coverage',
+    requires = 'nvim-lua/plenary.nvim',
+    config = function()
+      require("coverage").setup()
+    end,
   }
 
   -- Recompile the packer configurations so that any changes made are applied
