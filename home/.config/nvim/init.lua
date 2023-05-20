@@ -461,7 +461,7 @@ local packer = require('packer').startup(function(use)
     'andythigpen/nvim-coverage',
     requires = 'nvim-lua/plenary.nvim',
     config = function()
-      require("coverage").setup()
+      require('coverage').setup()
     end,
   }
 
@@ -472,3 +472,9 @@ end)
 -- Attempt an installation during every launch
 -- For a fresh setup, no plugins will be configured on the first launch, but packer will install everything for the second launch.
 packer.install()
+
+-- Try to load ./.nvim.lua to enable local workspace configuration
+local Path = require("plenary.path")
+if Path:new(".nvim.lua"):exists() then
+  vim.cmd("source ./.nvim.lua")
+end
