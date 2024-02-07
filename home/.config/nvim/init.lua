@@ -419,7 +419,7 @@ local packer = require('packer').startup(function(use)
   -- Telescope, a file/anything search utility
   use {
     'nvim-telescope/telescope.nvim',
-    tag = '0.1.0',
+    tag = '0.1.5',
     requires = { { 'nvim-lua/plenary.nvim' } },
     config = function()
       require('telescope').setup({
