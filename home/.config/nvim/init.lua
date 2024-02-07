@@ -370,6 +370,19 @@ local packer = require('packer').startup(function(use)
               },
             },
           })
+        elseif server_name == 'kotlin_language_server' then
+          require('lspconfig')[server_name].setup({
+            on_attach = on_attach,
+            settings = {
+              kotlin = {
+                compiler = {
+                  jvm = {
+                    target = "17"
+                  }
+                }
+              }
+            }
+          })
         else
           require("lspconfig")[server_name].setup({
             on_attach = on_attach
