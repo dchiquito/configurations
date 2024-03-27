@@ -39,8 +39,6 @@ vim.g.mapleader = ' '
 vim.cmd(':cabbrev h vert h')
 vim.cmd(':cabbrev help vert help')
 
--- format on save
-vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
 
 ------------------------------------
 -- Neovide specific configuration --
@@ -62,7 +60,7 @@ vim.keymap.set("n", "<C-=>", function()
   change_scale_factor(1.25)
 end)
 vim.keymap.set("n", "<C-->", function()
-  change_scale_factor(1/1.25)
+  change_scale_factor(1 / 1.25)
 end)
 
 
@@ -131,6 +129,26 @@ vim.keymap.set('', '<leader>cc', ':Coverage<cr>', { desc = 'Load and show covera
 vim.keymap.set('', '<leader>cs', ':CoverageShow<cr>', { desc = 'Show coverage report' })
 vim.keymap.set('', '<leader>ch', ':CoverageHide<cr>', { desc = 'Hide coverage report' })
 vim.keymap.set('', '<leader>c', ':CoverageSummary<cr>', { desc = 'Show coverage report summary' })
+
+-- format on save
+-- vim.cmd([[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]])
+local format_buffer = function()
+  vim.lsp.buf.format({ async = false })
+end
+FormatOnSave = false
+local toggle_format = function()
+  FormatOnSave = not (FormatOnSave)
+end
+local attempt_format_on_save = function()
+  if FormatOnSave then
+    format_buffer()
+  end
+end
+-- this will trigger on every file save
+vim.api.nvim_create_autocmd('BufWritePre', { pattern = '*', callback = attempt_format_on_save })
+-- toggle format on save
+vim.keymap.set('', '<leader>g', toggle_format, { desc = 'Toggle format on save' })
+vim.keymap.set('', '<leader>f', format_buffer, { desc = 'Format current buffer' })
 
 --------------------------
 -- Diagnostics settings --
@@ -212,7 +230,7 @@ require("lazy").setup({
   -- Show buffers as tabs along the top of the screen
   {
     'akinsho/bufferline.nvim',
-    dependencies = {'nvim-tree/nvim-web-devicons'},
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       require('bufferline').setup({
         options = {
@@ -233,70 +251,76 @@ require("lazy").setup({
 
   -- Comment/uncomment commands
   -- hotkeys are defined in the hotkeys section
-  { 'numToStr/Comment.nvim', config = function()
-    require('Comment').setup({
-      mappings = false,
-    })
-  end },
+  {
+    'numToStr/Comment.nvim',
+    config = function()
+      require('Comment').setup({
+        mappings = false,
+      })
+    end
+  },
 
   ---------------------
   -- Code completion --
   ---------------------
 
   -- Completion framework:
-  { 'hrsh7th/nvim-cmp', config = function()
-    local cmp = require 'cmp'
-    cmp.setup({
-      -- Enable LSP snippets
-      snippet = {
-        expand = function(args)
-          vim.fn["vsnip#anonymous"](args.body)
-        end,
-      },
-      mapping = {
-        ['<C-k>'] = cmp.mapping.select_prev_item(),
-        ['<C-j>'] = cmp.mapping.select_next_item(),
-        -- Add tab support
-        ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-        ['<Tab>'] = cmp.mapping.select_next_item(),
-        ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-f>'] = cmp.mapping.scroll_docs(4),
-        ['<C-Space>'] = cmp.mapping.complete(),
-        ['<C-e>'] = cmp.mapping.close(),
-        ['<CR>'] = cmp.mapping.confirm({
-          behavior = cmp.ConfirmBehavior.Insert,
-          select = true,
-        })
-      },
-      -- Installed sources:
-      sources = {
-        { name = 'path' },                                       -- file paths
-        { name = 'nvim_lsp',               keyword_length = 3 }, -- from language server
-        { name = 'nvim_lsp_signature_help' },                    -- display function signatures with current parameter emphasized
-        { name = 'nvim_lua',               keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
-        { name = 'buffer',                 keyword_length = 2 }, -- source current buffer
-        { name = 'vsnip',                  keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
-        { name = 'calc' },                                       -- source for math calculation
-      },
-      window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
-      },
-      formatting = {
-        fields = { 'menu', 'abbr', 'kind' },
-        format = function(entry, item)
-          local menu_icon = {
-            nvim_lsp = 'λ',
-            vsnip = '⋗',
-            buffer = 'Ω',
-            path = '🖫',
-          }
-          item.menu = menu_icon[entry.source.name]
-          return item
-        end,
-      },
-    })
-  end },
+  {
+    'hrsh7th/nvim-cmp',
+    config = function()
+      local cmp = require 'cmp'
+      cmp.setup({
+        -- Enable LSP snippets
+        snippet = {
+          expand = function(args)
+            vim.fn["vsnip#anonymous"](args.body)
+          end,
+        },
+        mapping = {
+          ['<C-k>'] = cmp.mapping.select_prev_item(),
+          ['<C-j>'] = cmp.mapping.select_next_item(),
+          -- Add tab support
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.close(),
+          ['<CR>'] = cmp.mapping.confirm({
+            behavior = cmp.ConfirmBehavior.Insert,
+            select = true,
+          })
+        },
+        -- Installed sources:
+        sources = {
+          { name = 'path' },                                       -- file paths
+          { name = 'nvim_lsp',               keyword_length = 3 }, -- from language server
+          { name = 'nvim_lsp_signature_help' },                    -- display function signatures with current parameter emphasized
+          { name = 'nvim_lua',               keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
+          { name = 'buffer',                 keyword_length = 2 }, -- source current buffer
+          { name = 'vsnip',                  keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
+          { name = 'calc' },                                       -- source for math calculation
+        },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        formatting = {
+          fields = { 'menu', 'abbr', 'kind' },
+          format = function(entry, item)
+            local menu_icon = {
+              nvim_lsp = 'λ',
+              vsnip = '⋗',
+              buffer = 'Ω',
+              path = '🖫',
+            }
+            item.menu = menu_icon[entry.source.name]
+            return item
+          end,
+        },
+      })
+    end
+  },
 
   -- LSP completion source:
   'hrsh7th/cmp-nvim-lsp',
@@ -310,7 +334,7 @@ require("lazy").setup({
   'hrsh7th/vim-vsnip',
 
   -- Git indicators
-  { 'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]] },
+  { 'lewis6991/gitsigns.nvim',   config = [[ require('gitsigns').setup() ]] },
 
   -- Hop
   {
@@ -340,13 +364,13 @@ require("lazy").setup({
       })
     end,
   },
-  
+
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] },
+  { 'williamboman/mason.nvim',  config = [[ require('mason').setup() ]] },
   {
     'williamboman/mason-lspconfig.nvim',
-    dependencies = {'williamboman/mason.nvim'},
+    dependencies = { 'williamboman/mason.nvim' },
     config = function()
       require('mason-lspconfig').setup()
       local on_attach = function(client, bufnr)
@@ -394,8 +418,8 @@ require("lazy").setup({
       })
     end,
   },
-  { 'neovim/nvim-lspconfig', dependencies = {'williamboman/mason-lspconfig.nvim'} },
-  { 'simrat39/rust-tools.nvim', dependencies = {'williamboman/mason-lspconfig.nvim'} },
+  { 'neovim/nvim-lspconfig',    dependencies = { 'williamboman/mason-lspconfig.nvim' } },
+  { 'simrat39/rust-tools.nvim', dependencies = { 'williamboman/mason-lspconfig.nvim' } },
 
   -- Nvim-tree, a file browser
   'nvim-tree/nvim-web-devicons',
@@ -477,7 +501,7 @@ require("lazy").setup({
   -- Test coverage
   {
     'andythigpen/nvim-coverage',
-    dependencies = {'nvim-lua/plenary.nvim'},
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
       require('coverage').setup()
     end,
@@ -486,4 +510,3 @@ require("lazy").setup({
   -- Plenary
   'nvim-lua/plenary.nvim',
 })
-
