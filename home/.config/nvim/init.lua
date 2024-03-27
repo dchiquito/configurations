@@ -50,19 +50,19 @@ if vim.fn.exists('g:neovide') then
   vim.g.neovide_hide_mouse_when_typing = true
   vim.opt.title = true
   vim.opt.titlestring = vim.env.PWD
-end
 
-vim.g.neovide_scale_factor = 1.0
-local change_scale_factor = function(delta)
-  vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta
+  Zoom = 0
+  local function zoom_by(delta)
+    Zoom = Zoom + delta
+    vim.g.neovide_scale_factor = (1.1 ^ Zoom)
+  end
+  vim.keymap.set("n", "<C-=>", function()
+    zoom_by(1)
+  end)
+  vim.keymap.set("n", "<C-->", function()
+    zoom_by(-1)
+  end)
 end
-vim.keymap.set("n", "<C-=>", function()
-  change_scale_factor(1.25)
-end)
-vim.keymap.set("n", "<C-->", function()
-  change_scale_factor(1 / 1.25)
-end)
-
 
 --------------------------------
 -- Keyboard shortcuts/hotkeys --
@@ -364,6 +364,14 @@ require("lazy").setup({
           return ''
         end
       end
+      -- custom widget to show the zoom level
+      local function zoom_line()
+        if vim.g.neovide_scale_factor ~= 1.0 then
+          return (tostring(math.floor(vim.g.neovide_scale_factor * 100)) .. '%%')
+        else
+          return ''
+        end
+      end
       require('lualine').setup({
         options = {
           theme = 'onedark',
@@ -372,7 +380,7 @@ require("lazy").setup({
           section_separators = '',
         },
         sections = {
-          lualine_x = { fos_line, 'filetype' }
+          lualine_x = { fos_line, zoom_line, 'filetype' }
         },
       })
       print(require('lualine').get_config().sections.lualine_x)
