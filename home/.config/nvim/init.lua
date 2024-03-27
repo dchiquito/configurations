@@ -268,13 +268,13 @@ local packer = require('packer').startup(function(use)
       },
       -- Installed sources:
       sources = {
-        { name = 'path' }, -- file paths
-        { name = 'nvim_lsp', keyword_length = 3 }, -- from language server
-        { name = 'nvim_lsp_signature_help' }, -- display function signatures with current parameter emphasized
-        { name = 'nvim_lua', keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
-        { name = 'buffer', keyword_length = 2 }, -- source current buffer
-        { name = 'vsnip', keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
-        { name = 'calc' }, -- source for math calculation
+        { name = 'path' },                                       -- file paths
+        { name = 'nvim_lsp',               keyword_length = 3 }, -- from language server
+        { name = 'nvim_lsp_signature_help' },                    -- display function signatures with current parameter emphasized
+        { name = 'nvim_lua',               keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
+        { name = 'buffer',                 keyword_length = 2 }, -- source current buffer
+        { name = 'vsnip',                  keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
+        { name = 'calc' },                                       -- source for math calculation
       },
       window = {
         completion = cmp.config.window.bordered(),
@@ -344,55 +344,57 @@ local packer = require('packer').startup(function(use)
 
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  use { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] }
-  use { 'williamboman/mason-lspconfig.nvim', config = function()
-    require('mason-lspconfig').setup()
-    local on_attach = function(client, bufnr)
-      local bufopts = { noremap = true, silent = true, buffer = bufnr }
-      vim.keymap.set('n', '<leader>n', require('rust-tools').hover_actions.hover_actions, bufopts)
-      vim.keymap.set('n', '<leader>m', require('rust-tools').code_action_group.code_action_group, bufopts)
-      vim.keymap.set('n', '<leader>i', vim.lsp.buf.implementation, bufopts)
-    end
-    require('mason-lspconfig').setup_handlers({
-      function(server_name)
-        -- Rust LSP support is handled specially using rust-tools
-        if server_name == 'rust_analyzer' then
-          require("rust-tools").setup({
-            server = {
-              on_attach = on_attach,
-              settings = {
-                ["rust-analyzer"] = {
-                  -- clippy check on save
-                  checkOnSave = {
-                    command = "clippy",
+  use { 'williamboman/mason.nvim', config = function()
+    require('mason').setup()
+    use { 'williamboman/mason-lspconfig.nvim', config = function()
+      require('mason-lspconfig').setup()
+      local on_attach = function(client, bufnr)
+        local bufopts = { noremap = true, silent = true, buffer = bufnr }
+        vim.keymap.set('n', '<leader>n', require('rust-tools').hover_actions.hover_actions, bufopts)
+        vim.keymap.set('n', '<leader>m', require('rust-tools').code_action_group.code_action_group, bufopts)
+        vim.keymap.set('n', '<leader>i', vim.lsp.buf.implementation, bufopts)
+      end
+      require('mason-lspconfig').setup_handlers({
+        function(server_name)
+          -- Rust LSP support is handled specially using rust-tools
+          if server_name == 'rust_analyzer' then
+            require("rust-tools").setup({
+              server = {
+                on_attach = on_attach,
+                settings = {
+                  ["rust-analyzer"] = {
+                    -- clippy check on save
+                    checkOnSave = {
+                      command = "clippy",
+                    },
                   },
                 },
               },
-            },
-          })
-        elseif server_name == 'kotlin_language_server' then
-          require('lspconfig')[server_name].setup({
-            on_attach = on_attach,
-            settings = {
-              kotlin = {
-                compiler = {
-                  jvm = {
-                    target = "17"
+            })
+          elseif server_name == 'kotlin_language_server' then
+            require('lspconfig')[server_name].setup({
+              on_attach = on_attach,
+              settings = {
+                kotlin = {
+                  compiler = {
+                    jvm = {
+                      target = "17"
+                    }
                   }
                 }
               }
-            }
-          })
-        else
-          require("lspconfig")[server_name].setup({
-            on_attach = on_attach
-          })
-        end
-      end,
-    })
+            })
+          else
+            require("lspconfig")[server_name].setup({
+              on_attach = on_attach
+            })
+          end
+        end,
+      })
+      use 'neovim/nvim-lspconfig'
+      use 'simrat39/rust-tools.nvim'
+    end }
   end }
-  use 'neovim/nvim-lspconfig'
-  use 'simrat39/rust-tools.nvim'
 
 
   -- Nvim-tree, a file browser
@@ -425,10 +427,10 @@ local packer = require('packer').startup(function(use)
       require('telescope').setup({
         extensions = {
           fzf = {
-            fuzzy = true, -- false will only do exact matching
+            fuzzy = true,                   -- false will only do exact matching
             override_generic_sorter = true, -- override the generic sorter
-            override_file_sorter = true, -- override the file sorter
-            case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+            override_file_sorter = true,    -- override the file sorter
+            case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
             -- the default case_mode is "smart_case"
           }
         },
