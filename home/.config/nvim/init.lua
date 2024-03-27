@@ -138,6 +138,8 @@ end
 FormatOnSave = false
 local toggle_format = function()
   FormatOnSave = not (FormatOnSave)
+  -- refresh the status line on the bottom
+  require('lualine').refresh()
 end
 local attempt_format_on_save = function()
   if FormatOnSave then
@@ -354,6 +356,14 @@ require("lazy").setup({
     config = function()
       -- disable the default vim footer
       vim.opt.showmode = false
+      -- custom widget to show if format on save is on
+      local function fos_line()
+        if FormatOnSave then
+          return 'Format on Save'
+        else
+          return ''
+        end
+      end
       require('lualine').setup({
         options = {
           theme = 'onedark',
@@ -361,7 +371,11 @@ require("lazy").setup({
           component_separators = '|',
           section_separators = '',
         },
+        sections = {
+          lualine_x = { fos_line, 'filetype' }
+        },
       })
+      print(require('lualine').get_config().sections.lualine_x)
     end,
   },
 
