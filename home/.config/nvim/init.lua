@@ -184,41 +184,35 @@ vim.opt.completeopt = { 'menuone', 'noselect', 'noinsert', 'preview' }
 vim.opt.shortmess = vim.opt.shortmess + { c = true }
 
 
---------------------
--- Packer Plugins --
---------------------
+------------------
+-- Lazy Plugins --
+------------------
 
--- Important note:
--- You must run :PackerSync to pick up any changes made to the configurations.
-
--- Install packer for plugin management
-local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
-
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-  print('Installing packer...')
-  local packer_url = 'https://github.com/wbthomason/packer.nvim'
-  vim.fn.system({ 'git', 'clone', '--depth', '1', packer_url, install_path })
-  print('Done.')
-
-  vim.cmd('packadd packer.nvim')
+-- install script
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.uv.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
-local packer = require('packer').startup(function(use)
-  -- Packer manages itself
-  use 'wbthomason/packer.nvim'
+vim.opt.rtp:prepend(lazypath)
 
-
+require("lazy").setup({
   -- .editorconfig file support
-  use 'editorconfig/editorconfig-vim'
-
+  'editorconfig/editorconfig-vim',
 
   -- Enhanced window closing ability
-  use 'moll/vim-bbye'
-
+  'moll/vim-bbye',
 
   -- Show buffers as tabs along the top of the screen
-  use {
+  {
     'akinsho/bufferline.nvim',
-    requires = 'nvim-tree/nvim-web-devicons',
+    dependencies = {'nvim-tree/nvim-web-devicons'},
     config = function()
       require('bufferline').setup({
         options = {
@@ -232,28 +226,25 @@ local packer = require('packer').startup(function(use)
         },
       })
     end
-  }
-
+  },
 
   -- A color scheme like VSCodes
-  use { 'martinsione/darkplus.nvim', config = [[ vim.cmd('colorscheme darkplus') ]] }
-
+  { 'martinsione/darkplus.nvim', config = function() vim.cmd('colorscheme darkplus') end },
 
   -- Comment/uncomment commands
   -- hotkeys are defined in the hotkeys section
-  use { 'numToStr/Comment.nvim', config = function()
+  { 'numToStr/Comment.nvim', config = function()
     require('Comment').setup({
       mappings = false,
     })
-  end }
-
+  end },
 
   ---------------------
   -- Code completion --
   ---------------------
 
   -- Completion framework:
-  use { 'hrsh7th/nvim-cmp', config = function()
+  { 'hrsh7th/nvim-cmp', config = function()
     local cmp = require 'cmp'
     cmp.setup({
       -- Enable LSP snippets
@@ -305,26 +296,24 @@ local packer = require('packer').startup(function(use)
         end,
       },
     })
-  end }
+  end },
 
   -- LSP completion source:
-  use 'hrsh7th/cmp-nvim-lsp'
+  'hrsh7th/cmp-nvim-lsp',
 
   -- Useful completion sources:
-  use 'hrsh7th/cmp-nvim-lua'
-  use 'hrsh7th/cmp-nvim-lsp-signature-help'
-  use 'hrsh7th/cmp-path'
-  use 'hrsh7th/cmp-buffer'
-  use 'hrsh7th/cmp-vsnip'
-  use 'hrsh7th/vim-vsnip'
-
+  'hrsh7th/cmp-nvim-lua',
+  'hrsh7th/cmp-nvim-lsp-signature-help',
+  'hrsh7th/cmp-path',
+  'hrsh7th/cmp-buffer',
+  'hrsh7th/cmp-vsnip',
+  'hrsh7th/vim-vsnip',
 
   -- Git indicators
-  use { 'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]] }
-
+  { 'lewis6991/gitsigns.nvim', config = [[ require('gitsigns').setup() ]] },
 
   -- Hop
-  use {
+  {
     'phaazon/hop.nvim',
     -- fixes a bug where trying to hop up/down on an empty line crashes
     commit = 'caaccee',
@@ -332,10 +321,10 @@ local packer = require('packer').startup(function(use)
     config = function()
       require('hop').setup({ keys = 'etovxqpdygfblzhckisuran' })
     end
-  }
+  },
 
   -- Nicer bottom status bar
-  use {
+  {
     'nvim-lualine/lualine.nvim',
     requires = 'nvim-tree/nvim-web-devicons',
     config = function()
@@ -350,14 +339,15 @@ local packer = require('packer').startup(function(use)
         },
       })
     end,
-  }
-
-
+  },
+  
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  use { 'williamboman/mason.nvim', config = function()
-    require('mason').setup()
-    use { 'williamboman/mason-lspconfig.nvim', config = function()
+  { 'williamboman/mason.nvim', config = [[ require('mason').setup() ]] },
+  {
+    'williamboman/mason-lspconfig.nvim',
+    dependencies = {'williamboman/mason.nvim'},
+    config = function()
       require('mason-lspconfig').setup()
       local on_attach = function(client, bufnr)
         local bufopts = { noremap = true, silent = true, buffer = bufnr }
@@ -402,38 +392,39 @@ local packer = require('packer').startup(function(use)
           end
         end,
       })
-      use 'neovim/nvim-lspconfig'
-      use 'simrat39/rust-tools.nvim'
-    end }
-  end }
-
+    end,
+  },
+  { 'neovim/nvim-lspconfig', dependencies = {'williamboman/mason-lspconfig.nvim'} },
+  { 'simrat39/rust-tools.nvim', dependencies = {'williamboman/mason-lspconfig.nvim'} },
 
   -- Nvim-tree, a file browser
-  use 'nvim-tree/nvim-web-devicons'
-  use { 'nvim-tree/nvim-tree.lua', config = function()
-    require('nvim-tree').setup({
-      hijack_cursor = true,
-      sync_root_with_cwd = true,
-      actions = {
-        open_file = {
-          quit_on_open = true,
+  'nvim-tree/nvim-web-devicons',
+  {
+    'nvim-tree/nvim-tree.lua',
+    config = function()
+      require('nvim-tree').setup({
+        hijack_cursor = true,
+        sync_root_with_cwd = true,
+        actions = {
+          open_file = {
+            quit_on_open = true,
+          },
         },
-      },
-      filters = {
-        dotfiles = false,
-      },
-      git = {
-        ignore = false,
-      },
-    })
-  end }
-
+        filters = {
+          dotfiles = false,
+        },
+        git = {
+          ignore = false,
+        },
+      })
+    end,
+  },
 
   -- Telescope, a file/anything search utility
-  use {
+  {
     'nvim-telescope/telescope.nvim',
-    tag = '0.1.5',
-    requires = { { 'nvim-lua/plenary.nvim' } },
+    version = '0.1.5',
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-fzf-native.nvim' },
     config = function()
       require('telescope').setup({
         extensions = {
@@ -451,19 +442,20 @@ local packer = require('packer').startup(function(use)
           preview = false,
         },
       })
+      require('telescope').load_extension('fzf')
     end
-  }
-  use {
+  },
+  {
     'nvim-telescope/telescope-fzf-native.nvim',
-    run = 'make',
-    config = [[ require('telescope').load_extension('fzf') ]],
-  }
+    build = 'make',
+    -- config = [[ require('telescope').load_extension('fzf') ]],
+  },
 
 
   -- Treesitter
-  use {
+  {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
+    build = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup {
         ensure_installed = { "javascript", "json", "lua", "markdown", "python", "rust", "toml", "typescript" },
@@ -480,27 +472,18 @@ local packer = require('packer').startup(function(use)
         }
       }
     end
-  }
+  },
 
   -- Test coverage
-  use {
+  {
     'andythigpen/nvim-coverage',
-    requires = 'nvim-lua/plenary.nvim',
+    dependencies = {'nvim-lua/plenary.nvim'},
     config = function()
       require('coverage').setup()
     end,
-  }
+  },
 
-  -- Recompile the packer configurations so that any changes made are applied
-  require('packer').compile()
-end)
+  -- Plenary
+  'nvim-lua/plenary.nvim',
+})
 
--- Attempt an installation during every launch
--- For a fresh setup, no plugins will be configured on the first launch, but packer will install everything for the second launch.
-packer.install()
-
--- Try to load ./.nvim.lua to enable local workspace configuration
-local Path = require("plenary.path")
-if Path:new(".nvim.lua"):exists() then
-  vim.cmd("source ./.nvim.lua")
-end
