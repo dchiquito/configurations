@@ -46,7 +46,8 @@ vim.cmd(':cabbrev help vert help')
 
 
 if vim.fn.exists('g:neovide') then
-  vim.opt.guifont = 'Cousine,Fira Mono:h8'
+  -- vim.opt.guifont = 'Cousine,Fira Mono:h8'
+  vim.o.guifont = 'Cousine Nerd Font,Fira Mono:h8'
   vim.g.neovide_hide_mouse_when_typing = true
   vim.opt.title = true
   vim.opt.titlestring = vim.env.PWD
@@ -229,6 +230,12 @@ require("lazy").setup({
   -- Enhanced window closing ability
   'moll/vim-bbye',
 
+  -- nerd icons
+  {
+    'glepnir/nerdicons.nvim',
+    cmd = 'NerdIcons',
+    config = function() require('nerdicons').setup({}) end
+  },
   -- Show buffers as tabs along the top of the screen
   {
     'akinsho/bufferline.nvim',
@@ -383,7 +390,6 @@ require("lazy").setup({
           lualine_x = { fos_line, zoom_line, 'filetype' }
         },
       })
-      print(require('lualine').get_config().sections.lualine_x)
     end,
   },
 
