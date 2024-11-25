@@ -153,6 +153,15 @@ vim.api.nvim_create_autocmd('BufWritePre', { pattern = '*', callback = attempt_f
 vim.keymap.set('', '<leader>g', toggle_format, { desc = 'Toggle format on save' })
 vim.keymap.set('', '<leader>f', format_buffer, { desc = 'Format current buffer' })
 
+-- search for word under cursor
+local search_for_word = ':/<c-r>=expand("<cword>")<cr>'
+vim.keymap.set('', '"', search_for_word, { desc = 'Search for word under cursor' })
+local global_search_for_word = '<cmd>Telescope grep_string<cr>'
+vim.keymap.set('', '<leader>"', global_search_for_word, { desc = 'Search all files for word under cursor' })
+local replace_word = ':%s/<c-r>=expand("<cword>")<cr>/'
+vim.keymap.set('', '<leader><leader>"', replace_word, { desc = 'Replace word under cursor' })
+
+
 --------------------------
 -- Diagnostics settings --
 --------------------------
@@ -359,7 +368,7 @@ require("lazy").setup({
   -- Nicer bottom status bar
   {
     'nvim-lualine/lualine.nvim',
-    requires = 'nvim-tree/nvim-web-devicons',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       -- disable the default vim footer
       vim.opt.showmode = false
@@ -379,6 +388,14 @@ require("lazy").setup({
           return ''
         end
       end
+      -- custom widget to show the active virtual environment
+      local function venv_line()
+        if require('venv-selector').source() == nil then
+          return ''
+        else
+          return 'venv on'
+        end
+      end
       require('lualine').setup({
         options = {
           theme = 'onedark',
@@ -387,7 +404,7 @@ require("lazy").setup({
           section_separators = '',
         },
         sections = {
-          lualine_x = { fos_line, zoom_line, 'filetype' }
+          lualine_x = { fos_line, zoom_line, venv_line, 'filetype' }
         },
       })
     end,
@@ -537,4 +554,29 @@ require("lazy").setup({
 
   -- Plenary
   'nvim-lua/plenary.nvim',
+
+  -- venv-selector
+  {
+    'linux-cultist/venv-selector.nvim',
+    dependencies = { 'neovim/nvim-lspconfig', 'nvim-telescope/telescope.nvim' },
+    branch = 'regexp',
+    event = 'VeryLazy', -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
+    keys = {
+      -- Keymap to open VenvSelector to pick a venv.
+      { '<leader>vs', '<cmd>VenvSelect<cr>' },
+      -- Keymap to retrieve the venv from a cache (the one previously used for the same project directory).
+      { '<leader>vc', '<cmd>VenvSelectCached<cr>' },
+    },
+    config = function()
+      require('venv-selector').setup {
+        settings = {
+          search = {
+            netbox = {
+              command = "echo /opt/netbox/venv/bin/python"
+            }
+          }
+        }
+      }
+    end,
+  },
 })
