@@ -1,0 +1,6 @@
+[window]
+opacity = 0.8
+
+[font]
+normal = { family = "Cousine Nerd Font", style = "Regular" }
+size = 10.5
