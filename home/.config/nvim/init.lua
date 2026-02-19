@@ -3,7 +3,6 @@
 -- Set a local variable to cut down on warnings about undefined global 'vim'.
 vim = vim
 
-
 --------------------------------------
 -- Generic vim options and settings --
 --------------------------------------
@@ -46,9 +45,12 @@ vim.cmd(':cabbrev help vert help')
 
 
 if vim.fn.exists('g:neovide') then
-  -- vim.opt.guifont = 'Cousine,Fira Mono:h8'
-  vim.o.guifont = 'Cousine Nerd Font,Fira Mono:h8'
+  -- vim.opt.guifont = 'Cousine'
+  vim.o.guifont = 'Cousine Nerd Font:h13'
   vim.g.neovide_hide_mouse_when_typing = true
+  vim.g.neovide_scroll_animation_length = 0.1
+  vim.g.neovide_opacity = 0.8
+  vim.g.neovide_normal_opacity = 0.8
   vim.opt.title = true
   vim.opt.titlestring = vim.env.PWD
 
@@ -116,6 +118,14 @@ vim.keymap.set('', '<leader>l', '<cmd>HopWordCurrentLineAC<cr>',
 
 -- comment/uncomment
 -- linewise commenting
+vim.keymap.set({ 'n', 'i', 'c' }, '<C-_>', function()
+  require('Comment.api').toggle.linewise.current()
+end, { desc = 'Toggle comments' })
+vim.keymap.set('v', '<C-_>', function()
+  local esc = vim.api.nvim_replace_termcodes('<ESC>', true, false, true)
+  vim.api.nvim_feedkeys(esc, 'nx', false)
+  require('Comment.api').toggle.linewise(vim.fn.visualmode())
+end, { desc = 'Toggle comments' })
 vim.keymap.set({ 'n', 'i', 'c' }, '<C-/>', function()
   require('Comment.api').toggle.linewise.current()
 end, { desc = 'Toggle comments' })
@@ -161,6 +171,19 @@ vim.keymap.set('', '<leader>"', global_search_for_word, { desc = 'Search all fil
 local replace_word = ':%s/<c-r>=expand("<cword>")<cr>/'
 vim.keymap.set('', '<leader><leader>"', replace_word, { desc = 'Replace word under cursor' })
 
+-- LSP stuff
+vim.keymap.set('n', '<leader>m', vim.lsp.buf.code_action, { desc = 'Code action' })
+vim.keymap.set('n', '<leader>n', vim.lsp.buf.hover, { desc = 'Hover' })
+vim.keymap.set('n', '<leader>i', vim.lsp.buf.implementation, { desc = 'Go to implementation' })
+vim.keymap.set('n', '<leader>d', vim.lsp.buf.definition, { desc = 'Go to definition' })
+vim.keymap.set('n', '<leader>s', vim.lsp.buf.rename, { desc = 'Rename symbol' })
+vim.keymap.set('n', '<leader>r', vim.lsp.buf.references, { desc = 'List references to symbol' })
+
+-- jump to error
+vim.keymap.set('n', '<C-E>',
+  function() vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR, wrap = true }) end)
+vim.keymap.set('n', '<S-E>',
+  function() vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR, wrap = true }) end)
 
 --------------------------
 -- Diagnostics settings --
@@ -412,59 +435,86 @@ require("lazy").setup({
 
   -- Mason, manages Language Server Protocol provider installation
   -- See the various :MasonInstall commands
-  { 'williamboman/mason.nvim',  config = [[ require('mason').setup() ]] },
+  { 'williamboman/mason.nvim',                  config = [[ require('mason').setup() ]] },
   {
     'williamboman/mason-lspconfig.nvim',
     dependencies = { 'williamboman/mason.nvim' },
     config = function()
       require('mason-lspconfig').setup()
-      local on_attach = function(client, bufnr)
-        local bufopts = { noremap = true, silent = true, buffer = bufnr }
-        vim.keymap.set('n', '<leader>n', require('rust-tools').hover_actions.hover_actions, bufopts)
-        vim.keymap.set('n', '<leader>m', require('rust-tools').code_action_group.code_action_group, bufopts)
-        vim.keymap.set('n', '<leader>i', vim.lsp.buf.implementation, bufopts)
-      end
-      require('mason-lspconfig').setup_handlers({
-        function(server_name)
-          -- Rust LSP support is handled specially using rust-tools
-          if server_name == 'rust_analyzer' then
-            require("rust-tools").setup({
-              server = {
-                on_attach = on_attach,
-                settings = {
-                  ["rust-analyzer"] = {
-                    -- clippy check on save
-                    checkOnSave = {
-                      command = "clippy",
-                    },
-                  },
-                },
-              },
-            })
-          elseif server_name == 'kotlin_language_server' then
-            require('lspconfig')[server_name].setup({
-              on_attach = on_attach,
-              settings = {
-                kotlin = {
-                  compiler = {
-                    jvm = {
-                      target = "17"
-                    }
-                  }
-                }
-              }
-            })
-          else
-            require("lspconfig")[server_name].setup({
-              on_attach = on_attach
-            })
-          end
-        end,
-      })
     end,
   },
-  { 'neovim/nvim-lspconfig',    dependencies = { 'williamboman/mason-lspconfig.nvim' } },
-  { 'simrat39/rust-tools.nvim', dependencies = { 'williamboman/mason-lspconfig.nvim' } },
+  {
+    'neovim/nvim-lspconfig',
+    dependencies = { 'williamboman/mason-lspconfig.nvim' },
+    config = function()
+      ------------------------
+      -- LSP configurations --
+      ------------------------
+
+      --- vim.lsp.config("*", {...})
+      vim.lsp.config("kotlin_language_server", {
+        settings = {
+          kotlin = {
+            compiler = {
+              jvm = {
+                target = "17"
+              }
+            }
+          }
+        }
+      })
+
+      -- We need to embed these LSP configs in the lazy plugin config because the $MASON env var needs to be set
+      local mason_packages = vim.fn.expand("$MASON/packages")
+      local vue_ls_path = mason_packages .. "/vue-language-server/node_modules/@vue/language-server"
+      local ts_plugin_path = vue_ls_path .. "/node_modules/@vue/typescript-plugin"
+      vim.lsp.config('ts_ls', {
+        init_options = {
+          plugins = {
+            {
+              name = "@vue/typescript-plugin",
+              location = ts_plugin_path,
+              languages = { "javascript", "typescript", "vue" },
+            },
+          }
+        },
+        filetypes = { "typescript", "javascript", "vue" },
+      })
+      vim.lsp.config('vue_ls', {})
+      vim.lsp.config('prettier', {
+        filetypes = { "vue" },
+      })
+      vim.filetype.add({
+        extension = {
+          adv = 'adv',
+        },
+      })
+      vim.lsp.config('adventus', {
+        cmd = { "/home/daniel/git/adventus2/target/release/lsp" },
+        filetypes = { "adv" },
+        root_markers = { ".git" },
+      })
+      -- vim.lsp.enable('adventus')
+    end
+  },
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^6',
+    lazy = false, -- This plugin is already lazy
+    init = function()
+      vim.g.rustaceanvim = {
+        server = {
+          default_settings = {
+            ['rust-analyzer'] = {
+              cargo = {
+                features = 'all'
+              },
+            }
+          }
+        }
+      }
+    end,
+  },
 
   -- Nvim-tree, a file browser
   'nvim-tree/nvim-web-devicons',
@@ -490,10 +540,11 @@ require("lazy").setup({
   },
 
   -- Telescope, a file/anything search utility
+  { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+  { 'nvim-telescope/telescope-ui-select.nvim' },
   {
     'nvim-telescope/telescope.nvim',
-    version = '0.1.5',
-    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-fzf-native.nvim' },
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-fzf-native.nvim', 'nvim-telescope/telescope-ui-select.nvim' },
     config = function()
       require('telescope').setup({
         extensions = {
@@ -503,21 +554,21 @@ require("lazy").setup({
             override_file_sorter = true,    -- override the file sorter
             case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
             -- the default case_mode is "smart_case"
+          },
+          ['ui-select'] = {
+            require('telescope.themes').get_dropdown({ layout_strategy = 'cursor' })
           }
         },
+        extensions_list = { 'fzf', 'ui-select' },
         -- sadly there is some kind of race condition where treesitter tries to do cleanup on the preview buffer after it has been partially cleaned up which throws errors whenever the file picker is closed.
         -- For now, preview must be disabled.
-        defaults = {
-          preview = false,
-        },
+        -- defaults = {
+        --   preview = false,
+        -- },
       })
       require('telescope').load_extension('fzf')
+      require('telescope').load_extension('ui-select')
     end
-  },
-  {
-    'nvim-telescope/telescope-fzf-native.nvim',
-    build = 'make',
-    -- config = [[ require('telescope').load_extension('fzf') ]],
   },
 
 
