@@ -1,6 +1,9 @@
 [window]
 opacity = 0.8
 
+[colors]
+transparent_background_colors = true
+
 [font]
 normal = { family = "Cousine Nerd Font", style = "Regular" }
 size = 10.5
